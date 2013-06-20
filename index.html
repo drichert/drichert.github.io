@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>.:.:.:.</title>
+
+    <style>
+      div#box {
+        position: absolute;
+        border:   1px solid #111;
+        width:    400px;
+        height:   400px;
+      }
+
+      div.cell{
+        position:   absolute;
+        background: #eee;
+        width:      10px;
+        height:     10px;
+      }
+    </style>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+    <script>
+      "use strict";
+
+      $(function() {
+        var Box = {
+          box:       $("#box"),
+          cell_size: 10,
+          width:     40,
+          height:    40,
+          cells:     [],
+
+          coin_toss: function() { 
+            return _.chain([1, 0]).shuffle().first().value()  
+          }
+        }
+
+        Box.fill_cells = function() {
+          var that = this
+
+          _.times(this.height, function(ndx) {
+            that.cells[ndx] = new Array(that.width)
+          })
+        }.call(Box)
+
+        Box.draw_cells = function() {
+          var that = this
+
+          _.times(that.height, function(y) {
+            _.times(that.width, function(x) {
+              var current_cell
+
+              current_cell = that.cells[x][y] = $('<div class="cell">')
+              current_cell.css({ 
+                background: that.coin_toss() ? "#800" : "#600",
+                left:       that.cell_size * x,
+                top:        that.cell_size * y
+              })
+
+              that.box.append(current_cell)
+            })
+          })
+        }
+
+        Box.draw_cells()
+        // NOT WORKING setInterval(Box.draw_cells, 5000)
+      })
+    </script>
+  </head>
+  <body>
+    <div id="box"></div>
+  </body>
+</html>
