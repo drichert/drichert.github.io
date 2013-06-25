@@ -5,8 +5,7 @@
 
     <style>
       div#box {
-        position: absolute;
-        border:   1px solid #111;
+        position: relative;
         width:    400px;
         height:   400px;
       }
@@ -17,12 +16,22 @@
         width:      10px;
         height:     10px;
       }
+
+      div#toggle {
+        border:     #0f0;
+        margin-top: 10px;
+        background: #0f0;
+        width:      40px;
+        height:     40px;
+        cursor:     hand;
+        cursor:     pointer;
+      }
     </style>
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
     <script>
-      "use strict";
+      "use strict"
 
       $(function() {
         var Box = {
@@ -31,45 +40,91 @@
           width:     40,
           height:    40,
           cells:     [],
+          running:   true,
 
-          coin_toss: function() { 
-            return _.chain([1, 0]).shuffle().first().value()  
+          coin_toss: function() {
+            return _.chain([1, 0]).shuffle().first().value()
+          },
+
+          cell: function() {
+            var that, cell
+
+            cell = $('<div class="cell"></div>')
+            cell.on("click", function() {
+              console.log(that.running)
+              that.running = !that.running
+            })
+
+            return cell
+          },
+
+          random_color: function() {
+            var r = function() { return "0123456789abcdef"[_.random(0, 15)] }
+
+            return "#" + [r(), r(), r()].join("")
+          },
+
+          remove_all: function() {
+            return $(".cell").remove()
+          },
+
+          fill_cells: function() {
+            var that = this
+
+            _.times(this.height, function(ndx) {
+              that.cells[ndx] = new Array(that.width)
+            })
+          },
+
+          draw_cells: function() {
+            var that = this
+
+            if(this.running) {
+              this.remove_all()
+
+              _.times(that.height, function(y) {
+                _.times(that.width, function(x) {
+                  var current_cell
+
+                  current_cell = that.cells[x][y] = that.cell()
+                  current_cell.css({
+                    background: that.random_color(),
+                    left:       that.cell_size * x,
+                    top:        that.cell_size * y
+                  })
+
+                  that.box.append(current_cell)
+                })
+              })
+            }
           }
         }
 
-        Box.fill_cells = function() {
-          var that = this
-
-          _.times(this.height, function(ndx) {
-            that.cells[ndx] = new Array(that.width)
-          })
-        }.call(Box)
-
-        Box.draw_cells = function() {
-          var that = this
-
-          _.times(that.height, function(y) {
-            _.times(that.width, function(x) {
-              var current_cell
-
-              current_cell = that.cells[x][y] = $('<div class="cell">')
-              current_cell.css({ 
-                background: that.coin_toss() ? "#800" : "#600",
-                left:       that.cell_size * x,
-                top:        that.cell_size * y
-              })
-
-              that.box.append(current_cell)
-            })
-          })
-        }
-
+        Box.fill_cells()
         Box.draw_cells()
-        // NOT WORKING setInterval(Box.draw_cells, 5000)
+
+        setInterval(function() { Box.draw_cells.call(Box) } , 5000)
+
+        $("#toggle").on("click", function(ev) {
+          var on_color, off_color
+
+          on_color  = "#0f0";
+          off_color = "#f00";
+
+          if(Box.running) {
+            Box.running = false
+            $(this).css({ background: off_color })
+          }
+          else {
+            Box.running = true
+            $(this).css({ background: on_color })
+          }
+        })
       })
     </script>
   </head>
   <body>
     <div id="box"></div>
+    <div id="toggle"></div>
   </body>
 </html>
